@@ -7,73 +7,10 @@
 
 // Initialize wifi first
 void wifi_initialize()
-{
-    static const char* TAG = "wifi_task";
-    
+{   
     // Initialize first with default configuration
     wifi_config_t config = WIFI_INIT_CONFIG_DEFAULT();
     WIFI_INIT(&config);
-
-    // Set custom configuration
-    wifi_set_config("ssid", "password", false);
-
-    // Print info
-    wifi_print_info();
-    
-    // ...
-
-
-    // When done setting up, start up wifi
-    WIFI_START();
-}
-
-void wifi_task(void *p)
-{
-    // Main loop
-    while (1)
-    {
-        
-        // Wait a little bit
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-    }
-}
-
-// [STATION] Initialize DHCP client to connect to the DHCP server at the AP
-void wifi_dhcp_client_init()
-{
-    tcpip_adapter_init();
-    tcpip_adapter_dhcpc_stop();
-
-    // Set IP info
-    tcpip_adapter_ip_info_t *ip_info;
-    wifi_set_up_info(ip_info, "192.168.1.99", "192.168.1.1", "255.255.255.0");
-
-    // Normal setup
-    esp_wifi_init();
-    esp_wifi_set_mode();
-    esp_wifi_set_config();
-    esp_wifi_config();
-}
-
-// [STATION] Set ip info using strings
-void wifi_set_ip_info(tcpip_adapter_ip_info_t &ip_info, char *ip, char *gw, char *nm)
-{
-    inet_pton(AF_INET, ip,  &ip_info.ip);
-    inet_pton(AF_INET, gw,  &ip_info.gw);
-    inet_pton(AF_INET, nm,  &ip_info.netmask);
-    
-    tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info);
-}
-
-// [STATION] Set ip info using numbers
-// Not sure if this overloaded function is useful
-void wifi_set_ip_info(tcpip_adapter_ip_info_t &ip_info, char ip[4], char gw[4], char nm[4])
-{
-    inet_pton(&ip_info.ip,      ip[0], ip[1], ip[2], ip[3]);
-    inet_pton(&ip_info.gw,      gw[0], gw[1], gw[2], gw[3]);
-    inet_pton(&ip_info.netmask, nm[0], nm[1], nm[2], nm[3]);
-    
-    tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info);
 }
 
 // [AP] Initialize device as a DHCP server so connecting stations
@@ -89,21 +26,7 @@ void wifi_dhcp_server_init()
     */
 }
 
-// Sets a new STATION configuration
-void wifi_set_sta_config(uint8_t ssid[32], uint8_t password[64], bool bssid_set)
-{
-    wifi_config_t config = {
-        .sta = {
-            .ssid       = ssid,
-            .password   = password,
-            .bssid_set  = bssid_set
-        }
-    };
-
-    esp_wifi_set_config(WIFI_IF_STA, (wifi_config_t *)&config);
-}
-
-// Sets a new ACCESS POINT configuration
+// [AP] Sets a new configuration
 void wifi_set_ap_config(uint8_t ssid[32], uint8_t password[64], 
     uint8_t ssid_len, uint8_t channel, wifi_auth_mode_t authmode, 
     uint8_t bssid_hidden, uint8_t max_connection, uint16_t beacon_interval)
@@ -124,7 +47,7 @@ void wifi_set_ap_config(uint8_t ssid[32], uint8_t password[64],
     esp_wifi_set_config(WIFI_IF_AP, (wifi_config_t *)&config);
 }
 
-// Get STATION info as an ACCESS POINT
+// [AP] Get STATION info
 void wifi_get_station_info()
 {
     // Not sure if there is a way to get number of stations
@@ -138,10 +61,12 @@ void wifi_get_station_info()
         // Traverse link list
         station_list = STAILQ_NEXT(station_list, NEXT);
     }
+
+    free(station_list);
 }
 
 // Callback function that handles when wifi events happen
-static void wifi_event_handler(system_event_t *event)
+void wifi_event_handler(system_event_t *event)
 {
     static const char* TAG = "wifi_event_handler";
 
@@ -304,10 +229,4 @@ void wifi_print_info()
             ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_MAX");
             break;
     }
-
-    // Deallocate dynamic memory
-    free(mode);
-    free(ps);    
-    free(bwidth);
-    free(config);
 }

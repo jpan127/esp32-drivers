@@ -26,4 +26,12 @@ void tls_init()
     mbedtls_x509_crt_init(&x509_crt);
     // Initialize psuedo RNG
     mbedtls_ctr_drbg_seed();
+
+    // Connect
+    tls_connect()
+}
+
+void tls_connect()
+{
+    medtls_net_connect()
 }

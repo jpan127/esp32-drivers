@@ -70,6 +70,6 @@ void wifi_set_ap_config(uint8_t ssid[32], uint8_t password[64],
 void wifi_get_station_info();
 
 // Callback function that handles when wifi events happen
-static void wifi_event_handler(system_event_t *event);
+void wifi_event_handler(system_event_t *event);
 
 void wifi_print_info();
