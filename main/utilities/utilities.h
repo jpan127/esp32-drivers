@@ -1,9 +1,18 @@
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Most common includes
 #include <stdio.h>
-#include <esp_log.h>    // Logging
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_log.h>            // Logging
 
 #define ESP_LOG_LINE                                             \
-        (printf("-----------------------------------------")
+    (printf("-----------------------------------------")
+
 #define TASK_DELAY(n) (vTaskDelay(n / portTICK_PERIOD_MS))
 
 // Task creation stack sizes
@@ -16,3 +25,7 @@
 #define _8KB    (8192)
 #define _16KB   (16384)
 #define _32KB   (32768)
+
+#ifdef __cplusplus
+}
+#endif

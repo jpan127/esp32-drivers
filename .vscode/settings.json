@@ -1,6 +1,15 @@
 {
     "files.associations": {
         "gpio.h": "c",
-        "i2c.h": "c"
+        "i2c.h": "c",
+        "wifi_ap.h": "c",
+        "wifi.h": "c",
+        "cstring": "c",
+        "system_error": "c",
+        "esp_system.h": "c",
+        "esp_log.h": "c",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "type_traits": "cpp"
     }
 }

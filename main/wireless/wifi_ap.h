@@ -1,8 +1,6 @@
 #pragma once
 #include "wifi.h"
-#include "lwip/sockets.h"       // AF_INET
-#include "nvs_flash.h"          // nvs_flash_init()
-#include <string.h>
+
 /********************************************************************************************
     Initialization:
         tcpip_adapter_init() to create an lwIP core task and initialize.
@@ -32,17 +30,14 @@
         esp_wifi_deinit() to unload driver.
 ********************************************************************************************/
 
-// [STATION] Sets a new configuration
-void wifi_set_sta_config(uint8_t ssid[32], uint8_t password[64], bool bssid_set);
+// [AP] Set a new configuration
+void wifi_set_ap_config(uint8_t ssid[32], uint8_t password[64], 
+    uint8_t ssid_len, uint8_t channel, wifi_auth_mode_t authmode, 
+    uint8_t bssid_hidden, uint8_t max_connection, uint16_t beacon_interval);
 
-// [STATION] Initialize DHCP client to connect to the DHCP server at the AP
-void wifi_dhcp_client_init(uint8_t ssid[32], uint8_t pass[64], bool bssid_set);
+// [AP] Get STATION info
+void wifi_get_station_info();
 
-// [STATION] Set ip info using strings
-void wifi_set_ip_info(tcpip_adapter_ip_info_t *ip_info, char *ip, char *gw, char *nm);
-
-// Scans all channels for all APs
-void wifi_sta_scan_all();
-
-// Scans for a specific AP across all channels
-void wifi_sta_scan_specific(uint8_t ssid[32]);
+// [AP] Initialize device as a DHCP server so connecting stations
+// can auto assign IP addresses, learn subnet masks, gateways
+void wifi_dhcp_server_init();

@@ -1,68 +1,11 @@
 #include "wifi.h"
 
-/*  
- *  TODO:
- *  Split station and AP functions into separate sections
- */
-
-// Initialize wifi first
-void wifi_initialize()
+// Initialize wifi based on default configuration
+void wifi_config_default()
 {   
     // Initialize first with default configuration
-    wifi_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-    WIFI_INIT(&config);
-}
-
-// [AP] Initialize device as a DHCP server so connecting stations
-// can auto assign IP addresses, learn subnet masks, gateways
-void wifi_dhcp_server_init()
-{
-    /*
-        wifi_softap_dhcps_start();
-        wifi_softap_dhcps_stop();
-        wifi_softap_dhcps_status();
-        // Default range of DHCP server is 192.168.4.1 upwards
-        tcpip_adapter_get_ip_info();
-    */
-}
-
-// [AP] Sets a new configuration
-void wifi_set_ap_config(uint8_t ssid[32], uint8_t password[64], 
-    uint8_t ssid_len, uint8_t channel, wifi_auth_mode_t authmode, 
-    uint8_t bssid_hidden, uint8_t max_connection, uint16_t beacon_interval)
-{
-    wifi_config_t config = {
-        .ap = {
-            .ssid       = ssid,
-            .password   = password,
-            .ssid_len   = ssid_len,
-            .channel    = channel,
-            .authmode   = authmode,
-            .bssid_hidden    = bssid_hidden,
-            .max_connection  = max_connection,
-            .beacon_interval = beacon_interval
-        }
-    };
-
-    esp_wifi_set_config(WIFI_IF_AP, (wifi_config_t *)&config);
-}
-
-// [AP] Get STATION info
-void wifi_get_station_info()
-{
-    // Not sure if there is a way to get number of stations
-
-    wifi_sta_list *station_list;
-    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list);
-
-    while (station_list)
-    {
-        ESP_LOGI("Station IP: %d.%d.%d.%d", IP2STR(&(station_list->ip)));
-        // Traverse link list
-        station_list = STAILQ_NEXT(station_list, NEXT);
-    }
-
-    free(station_list);
+    wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&config));
 }
 
 // Callback function that handles when wifi events happen
@@ -73,15 +16,46 @@ void wifi_event_handler(system_event_t *event)
     switch (event->event_id)
     {
         // Finished scanning for AP
-        case: SYSTEM_EVENT_SCAN_DONE:
+        case SYSTEM_EVENT_SCAN_DONE:
             ESP_LOGI(TAG, "SYSTEM_EVENT_SCAN_DONE");
+            // Need to get AP records and free the memory allocated for it
+            uint16_t num = 0;
+            ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&num));
+
+            ESP_LOGI("", "-------------------------------------------------------------");
+            ESP_LOGI(TAG, "AP number           : %i", num);
+            ESP_LOGI(TAG, "Number of APs found : %i", event->event_info.scan_done.number);
+
+            // Allocate array of ap_records
+            wifi_ap_record_t *ap_records = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * num);
+            ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&num, ap_records));
+
+            for (int i=0; i<num; i++) 
+            {
+                // Do not need to be freed because string literal
+                char *second    = wifi_second_to_string(ap_records[i].second);
+                char *auth_mode = wifi_authmode_to_string(ap_records[i].authmode);
+
+                ESP_LOGI(TAG, "[AP %i] %s | %s | %i | %i | %s | %s",
+                                                                    i,
+                                                                    ap_records[i].ssid, 
+                                                                    ap_records[i].bssid, 
+                                                                    ap_records[i].primary,
+                                                                    ap_records[i].rssi, 
+                                                                    second,
+                                                                    auth_mode);
+            }
+
+            ESP_LOGI("", "-------------------------------------------------------------");
+
+            free(ap_records);
             break;
         // Started being a station
-        case: SYSTEM_EVENT_STA_START:
+        case SYSTEM_EVENT_STA_START:
             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_START");
             break;
         // Stopped being a station
-        case: SYSTEM_EVENT_STA_STOP:
+        case SYSTEM_EVENT_STA_STOP:
             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_STOP");
             break;
         // Connected to an AP as a station
@@ -90,6 +64,7 @@ void wifi_event_handler(system_event_t *event)
             break;
         // Disconnected from AP as a station
         case SYSTEM_EVENT_STA_DISCONNECTED:
+            // Should close all sockets
             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_DISCONNECTED");
             break;
         // Authentication mode has changed
@@ -98,7 +73,7 @@ void wifi_event_handler(system_event_t *event)
             break;
         // Got an IP address from AP as a station
         case SYSTEM_EVENT_STA_GOT_IP:
-            ESP_LOGI(TAG, "SYSTEM_EVENT_STA_GOT_IP, IP: ", IP2STR(event->event_info.got_ip.ip_info.ip));
+            ESP_LOGI(TAG, "SYSTEM_EVENT_STA_GOT_IP"); //, IP: ", IP2STR(event->event_info.got_ip.ip_info.ip));
             break;
         // Started being an AP
         case SYSTEM_EVENT_AP_START:
@@ -114,11 +89,8 @@ void wifi_event_handler(system_event_t *event)
             break;
         // A station disconnected from us as an AP
         case SYSTEM_EVENT_AP_STADISCONNECTED:
+            // Close socket related to station
             ESP_LOGI(TAG, "SYSTEM_EVENT_AP_STADISCONNECTED, Code: %i", event->event_info.disconnected.reason);
-            break;
-        // Received a probe request as an AP
-        case SYSTEM_EVENT_AP_PROBEREQRECVED:
-            ESP_LOGI(TAG, "SYSTEM_EVENT_AP_PROBEREQRECVED");
             break;
         // Undefined event handling
         default:
@@ -130,103 +102,124 @@ void wifi_event_handler(system_event_t *event)
 void wifi_print_info()
 {
     // Mode
-    wifi_mode_t *mode;
-    WIFI_GET_MODE(mode);
+    wifi_mode_t mode;
+    ESP_ERROR_CHECK(esp_wifi_get_mode(&mode));
     switch (mode)
     {
-        case WIFI_MODE_NULL:    ESP_LOGI(TAG, "WIFI_MODE_NULL");     break;
-        case WIFI_MODE_STA:     ESP_LOGI(TAG, "WIFI_MODE_STA");      break;
-        case WIFI_MODE_AP:      ESP_LOGI(TAG, "WIFI_MODE_AP");       break;
-        case WIFI_MODE_APSTA:   ESP_LOGI(TAG, "WIFI_MODE_APSTA");    break;
-        case WIFI_MODE_MAX:     ESP_LOGI(TAG, "WIFI_MODE_MAX");      break;
+        case WIFI_MODE_NULL:    printf("Mode: WIFI_MODE_NULL\n");     break;
+        case WIFI_MODE_STA:     printf("Mode: WIFI_MODE_STA\n");      break;
+        case WIFI_MODE_AP:      printf("Mode: WIFI_MODE_AP\n");       break;
+        case WIFI_MODE_APSTA:   printf("Mode: WIFI_MODE_APSTA\n");    break;
+        case WIFI_MODE_MAX:     printf("Mode: I_MODE_MAX\n");         break;
     }
 
     // Power Save
-    wifi_ps_type_t *ps;
-    WIFI_GET_PS(ps);
+    wifi_ps_type_t ps;
+    ESP_ERROR_CHECK(esp_wifi_get_ps(&ps));
     switch (ps)
     {
         case WIFI_PS_NONE:
-            ESP_LOGI("Power Save", "WIFI_PS_NONE");
+            printf("Power Save: WIFI_PS_NONE\n");
             break;
         case WIFI_PS_MODEM:
-            ESP_LOGI("Power Save", "WIFI_PS_MODEM");
+            printf("Power Save: WIFI_PS_MODEM\n");
             break;
     }
     
     // Bandwidth
-    wifi_interface_t iface;
-    wifi_bandwidth_t *bwidth;
-
-    iface = ESP_IF_WIFI_STA;
-    WIFI_GET_BANDWIDTH(iface, bwidth);
+    wifi_bandwidth_t bwidth;
+    ESP_ERROR_CHECK(esp_wifi_get_bandwidth(ESP_IF_WIFI_STA, &bwidth));
     switch (bwidth)
     {
         case WIFI_BW_HT20:
-            ESP_LOGI("STA Bandwidth", "WIFI_BW_HT20");
+            printf("STA Bandwidth: WIFI_BW_HT20\n");
             break;
         case WIFI_BW_HT40:
-            ESP_LOGI("STA Bandwidth", "WIFI_BW_HT40");
+            printf("STA Bandwidth: WIFI_BW_HT40\n");
             break;
     }
 
-    iface = ESP_IF_WIFI_AP;
-    WIFI_GET_BANDWIDTH(iface, bwidth);
+    ESP_ERROR_CHECK(esp_wifi_get_bandwidth(ESP_IF_WIFI_AP, &bwidth));
     switch (bwidth)
     {
         case WIFI_BW_HT20:
-            ESP_LOGI("AP Bandwidth", "WIFI_BW_HT20");
+            printf("AP Bandwidth: WIFI_BW_HT20\n");
             break;
         case WIFI_BW_HT40:
-            ESP_LOGI("AP Bandwidth", "WIFI_BW_HT40");
+            printf("AP Bandwidth: WIFI_BW_HT40\n");
             break;
     }
 
-    // Configuration
-    wifi_config_t *config;
+    // Get station configuration
+    wifi_config_t config;
+    ESP_ERROR_CHECK(esp_wifi_get_config(ESP_IF_WIFI_STA, &config));
 
-    iface = ESP_IF_WIFI_STA;
-    WIFI_GET_CONFIG(iface, config);
+    printf("STA Configuration: SSID      : %s\n", config.sta.ssid);
+    printf("STA Configuration: PASS      : %s\n", config.sta.password);
+    printf("STA Configuration: BSSID_SET : %i\n", config.sta.bssid_set);
+    printf("STA Configuration: BSSID     : %s\n", config.sta.bssid);
+    printf("STA Configuration: CHANNEL   : %i\n", config.sta.channel);
+    printf("STA Configuration: SSID      : %s\n", config.sta.ssid);
+    printf("STA Configuration: PASS      : %s\n", config.sta.password);
 
-    ESP_LOGI("STA Configuration", "SSID      : %i", config.sta.ssid);
-    ESP_LOGI("STA Configuration", "PASS      : %i", config.sta.password);
-    ESP_LOGI("STA Configuration", "BSSID_SET : %i", config.sta.bssid_set);
-    ESP_LOGI("STA Configuration", "BSSID     : %i", config.sta.bssid);
-    ESP_LOGI("STA Configuration", "CHANNEL   : %i", config.sta.channel);
+    // Get AP configuration
+    ESP_ERROR_CHECK(esp_wifi_get_config(ESP_IF_WIFI_AP, &config));
 
-    iface = ESP_IF_WIFI_AP;
-    WIFI_GET_CONFIG(iface, config);
-    
-    ESP_LOGI("AP Configuration", "SSID      : %i", config.ap.ssid);
-    ESP_LOGI("AP Configuration", "PASS      : %i", config.ap.password);
-    ESP_LOGI("AP Configuration", "SSID_LEN  : %i", config.ap.ssid_len);
-    ESP_LOGI("AP Configuration", "CHANNEL   : %i", config.ap.channel);
-    ESP_LOGI("AP Configuration", "SSID_HIDD : %i", config.ap.channel);
-    ESP_LOGI("AP Configuration", "MAX_CONN  : %i", config.ap.channel);
-    ESP_LOGI("AP Configuration", "BEACON_ITV: %i", config.ap.channel);
+    printf("AP Configuration: CHANNEL   : %i\n", config.ap.channel);
+    printf("AP Configuration: SSID_HIDD : %i\n", config.ap.ssid_hidden);
+    printf("AP Configuration: MAX_CONN  : %i\n", config.ap.max_connection);
+    printf("AP Configuration: BEACON_ITV: %i\n", config.ap.beacon_interval);
     
     switch (config.ap.authmode)
     {
         case WIFI_AUTH_OPEN:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_OPEN");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_OPEN\n");
             break;
         case WIFI_AUTH_WEP:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_WEP");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_WEP\n");
             break;
         case WIFI_AUTH_WPA_PSK:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_WPA_PSK");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_WPA_PSK\n");
             break;
         case WIFI_AUTH_WPA2_PSK:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_WPA2_PSK");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_WPA2_PSK\n");
             break;
         case WIFI_AUTH_WPA_WPA2_PSK:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_WPA_WPA2_PSK");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_WPA_WPA2_PSK\n");
             break;
         case WIFI_AUTH_WPA2_ENTERPRISE:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_WPA2_ENTERPRISE");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_WPA2_ENTERPRISE\n");
             break;
         case WIFI_AUTH_MAX:
-            ESP_LOGI("AP Configuration", "AUTHMODE  : WIFI_AUTH_MAX");
+            printf("AP Configuration: AUTHMODE  : WIFI_AUTH_MAX\n");
             break;
     }
+}
+
+char* wifi_authmode_to_string(wifi_auth_mode_t mode)
+{
+    switch (mode)
+    {
+        case WIFI_AUTH_OPEN:            return "WIFI_AUTH_OPEN";
+        case WIFI_AUTH_WEP:             return "WIFI_AUTH_WEP";
+        case WIFI_AUTH_WPA_PSK:         return "WIFI_AUTH_WPA_PSK";
+        case WIFI_AUTH_WPA2_PSK:        return "WIFI_AUTH_WPA2_PSK";
+        case WIFI_AUTH_WPA_WPA2_PSK:    return "WIFI_AUTH_WPA_WPA2_PSK";
+        case WIFI_AUTH_WPA2_ENTERPRISE: return "WIFI_AUTH_WPA2_ENTERPRISE";
+        case WIFI_AUTH_MAX:             return "WIFI_AUTH_MAX";
+    }
+
+    return NULL;
+}
+
+char* wifi_second_to_string(wifi_second_chan_t second)
+{
+    switch (second)
+    {
+        case WIFI_SECOND_CHAN_NONE:     return "WIFI_SECOND_CHAN_NONE";
+        case WIFI_SECOND_CHAN_ABOVE:    return "WIFI_SECOND_CHAN_ABOVE";
+        case WIFI_SECOND_CHAN_BELOW:    return "WIFI_SECOND_CHAN_BELOW";
+    }
+
+    return NULL;
 }
