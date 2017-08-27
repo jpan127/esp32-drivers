@@ -18,5 +18,5 @@ Assuming mys32 and esp-idf is installed correctly.
     1. Navigate to msys32/home/<USER>
     2. Open .bash_profile
     3. Add this at the very top
-        export HOME=<PATH_TO_PROJECT>
-        cd $HOME
+        - export HOME=<PATH_TO_PROJECT>
+        - cd $HOME
