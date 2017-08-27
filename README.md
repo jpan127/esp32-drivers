@@ -12,3 +12,11 @@ Assuming mys32 and esp-idf is installed correctly.
     5. Save and exit
     6. Run <make flash monitor>
     7. Run <Ctrl + ]> to exit
+
+## Change $HOME of msys32 Windows esp-idf shell
+
+    1. Navigate to msys32/home/<USER>
+    2. Open .bash_profile
+    3. Add this at the very top
+        export HOME=<PATH_TO_PROJECT>
+        cd $HOME
