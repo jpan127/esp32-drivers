@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceRoot}",
-                "C:/Users/JP/Desktop/ESP32/esp-idf/components",
+                "C:/Users/JP/Desktop/esp-idf/components",
                 "C:/MinGW/mingw64/lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"
             ],
             "defines": [
@@ -15,7 +15,7 @@
             "browse": {
                 "path": [
                     "${workspaceRoot}",
-                    "C:/Users/JP/Desktop/ESP32/esp-idf/components",
+                    "C:/Users/JP/Desktop/esp-idf/components",
                     "C:/MinGW/mingw64/lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"
                 ],
                 "limitSymbolsToIncludedHeaders": true,

@@ -36,7 +36,7 @@ private:
 };
 
 // Child class of Gpio that starts out as Input
-class GpioInput : Gpio
+class GpioInput : public Gpio
 {
 public:
 
@@ -46,7 +46,7 @@ public:
 };
 
 // Child class of Gpio that starts out as Output
-class GpioOutput : Gpio
+class GpioOutput : public Gpio
 {
 public:
 

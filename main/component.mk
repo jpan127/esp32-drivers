@@ -7,5 +7,5 @@
 # please read the ESP-IDF documents if you need to do this.
 #
 
-COMPONENT_SRCDIRS 			:= main utilities wireless io
-COMPONENT_ADD_INCLUDEDIRS 	:= main utilities wireless io
+COMPONENT_SRCDIRS 			:= main utilities wireless io tasks motor
+COMPONENT_ADD_INCLUDEDIRS 	:= main utilities wireless io tasks motor

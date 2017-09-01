@@ -14,8 +14,8 @@ class Pwm
 public:
 
     // Constructor
-    Pwm(mcpwm_unit_t pwm, int gpio_a, int gpio_b, mcpwm_timer_t timer);
-
+    Pwm(mcpwm_unit_t pwm_unit, int gpio_a, int gpio_b, mcpwm_timer_t timer);
+    
     // Initializes pwm, the gpio pins, etc with DEFAULT configurations
     void Initialize();
 

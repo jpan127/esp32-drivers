@@ -8,9 +8,9 @@ class MotorDriver
 public:
 
     // Constructor
-    MotorDriver(gpio_num_t enableA, gpio_num_t enableB, gpio_num_t pwmA, gpio_num_t pwmB);
-
-    MotorDriver(int enableA, int enableB, int pwmA, int pwmB);
+    MotorDriver(int enableA, int enableB, 
+                int pwmA,    int pwmB,
+                mcpwm_unit_t pwm_unit, mcpwm_timer_t timer);
 
     // Move forward
     void Forward(float duty);

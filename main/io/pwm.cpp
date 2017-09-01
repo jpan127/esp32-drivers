@@ -1,8 +1,8 @@
 #include "pwm.hpp"
 
-Pwm::Pwm(mcpwm_unit_t pwm, int gpio_a, int gpio_b, mcpwm_timer_t timer)
+Pwm::Pwm(mcpwm_unit_t pwm_unit, int gpio_a, int gpio_b, mcpwm_timer_t timer)
 {
-    PwmUnit  = pwm;
+    PwmUnit  = pwm_unit;
     GpioA    = gpio_a;
     GpioB    = gpio_b;
     PwmTimer = timer;
