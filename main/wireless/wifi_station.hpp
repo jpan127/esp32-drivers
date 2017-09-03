@@ -1,7 +1,6 @@
 #pragma once
 #include "wifi.h"
 #include "lwip/sockets.h"       // AF_INET
-#include "nvs_flash.h"          // nvs_flash_init()
 #include <string.h>
 /********************************************************************************************
     Initialization:
@@ -33,13 +32,10 @@
 ********************************************************************************************/
 
 // [STATION] Sets a new configuration
-void wifi_set_sta_config(uint8_t ssid[32], uint8_t password[64], bool bssid_set);
+void wifi_set_sta_config(uint8_t ssid[32], uint8_t password[64], bool bssid_set=0);
 
 // [STATION] Initialize DHCP client to connect to the DHCP server at the AP
 void wifi_dhcp_client_init(uint8_t ssid[32], uint8_t pass[64], bool bssid_set);
-
-// [STATION] Set ip info using strings
-void wifi_set_ip_info(tcpip_adapter_ip_info_t *ip_info, char *ip, char *gw, char *nm);
 
 // Scans all channels for all APs
 void wifi_sta_scan_all();

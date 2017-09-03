@@ -1,5 +1,5 @@
-#include "wifi_station.h"
-#include "wifi_ap.h"
+#include "wifi_station.hpp"
+#include "wifi_ap.hpp"
 #include "utilities.h"
 
 // static uint8_t *ssid = (uint8_t *)("JP Home");
@@ -31,13 +31,13 @@ esp_err_t wifi_scan_event_handler(void *ctx, system_event_t *event)
             char *auth_mode = wifi_authmode_to_string(ap_records[i].authmode);
 
             ESP_LOGI(TAG, "[AP %i] %1s | %s | %s",
-                                                                i,
-                                                                ap_records[i].ssid, 
-                                                                // ap_records[i].bssid, 
-                                                                // ap_records[i].primary,
-                                                                // ap_records[i].rssi, 
-                                                                second,
-                                                                auth_mode);
+                                                    i,
+                                                    ap_records[i].ssid, 
+                                                    // ap_records[i].bssid, 
+                                                    // ap_records[i].primary,
+                                                    // ap_records[i].rssi, 
+                                                    second,
+                                                    auth_mode);
         }
 
         ESP_LOGI("", "-------------------------------------------------------------");
@@ -50,13 +50,14 @@ esp_err_t wifi_scan_event_handler(void *ctx, system_event_t *event)
 
 void wifi_scan_task(void *p)
 {
+    nvs_flash_init();
+    tcpip_adapter_init();
+
     // Register an event handler
     ESP_ERROR_CHECK(esp_event_loop_init((system_event_cb_t)wifi_scan_event_handler, NULL));
 
     // Initialize default configuration
-    wifi_config_default();
-    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    wifi_config_default(WIFI_MODE_STA);
     // Set country code to set channel scan range
     ESP_ERROR_CHECK(esp_wifi_set_country(WIFI_COUNTRY_US));
     
@@ -69,7 +70,7 @@ void wifi_scan_task(void *p)
         // Scan all
         wifi_sta_scan_all();
 
-        // Wait a little bit
+        // Every 5 seconds
         TASK_DELAY(5000);
     }
 }

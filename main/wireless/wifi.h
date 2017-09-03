@@ -12,9 +12,11 @@ extern "C" {
 #include <esp_wifi.h>                   // Wifi
 #include <esp_err.h>                    // Error handling
 #include <esp_event_loop.h>             // Event loop handling
+#include "lwip/sockets.h"               // AF_INET
+#include "nvs_flash.h"                  // nvs_flash_init()
 
 // Initialize wifi based on default configuration
-void wifi_config_default();
+void wifi_config_default(wifi_mode_t mode);
 
 // Callback function that handles when wifi events happen
 void wifi_event_handler(system_event_t *event);
@@ -27,6 +29,9 @@ char* wifi_authmode_to_string(wifi_auth_mode_t mode);
 
 // Returns scan second channel in string
 char* wifi_second_to_string(wifi_second_chan_t second);
+
+// Set TCPIP adapter info: ip, gateway, subnet
+void wifi_set_ip_info(const char *ip, const char *gw, const char *nm);
 
 #ifdef __cplusplus
 }

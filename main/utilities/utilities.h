@@ -39,34 +39,34 @@ inline int gpio_enum_to_int(gpio_num_t gpio)
 {
     switch (gpio)
     {
-        case 0:  return 0;
-        case 1:  return 1;
-        case 2:  return 2;
-        case 3:  return 3;
-        case 4:  return 4;
-        case 5:  return 5;
-        case 6:  return 6;
-        case 7:  return 7;
-        case 8:  return 8;
-        case 9:  return 9;
-        case 10: return 10;
-        case 11: return 11;
-        case 12: return 12;
-        case 13: return 13;
-        case 14: return 14;
-        case 15: return 15;
-        case 16: return 16;
-        case 17: return 17;
-        case 18: return 18;
-        case 19: return 19;
+        case GPIO_NUM_0:  return 0;
+        case GPIO_NUM_1:  return 1;
+        case GPIO_NUM_2:  return 2;
+        case GPIO_NUM_3:  return 3;
+        case GPIO_NUM_4:  return 4;
+        case GPIO_NUM_5:  return 5;
+        case GPIO_NUM_6:  return 6;
+        case GPIO_NUM_7:  return 7;
+        case GPIO_NUM_8:  return 8;
+        case GPIO_NUM_9:  return 9;
+        case GPIO_NUM_10: return 10;
+        case GPIO_NUM_11: return 11;
+        case GPIO_NUM_12: return 12;
+        case GPIO_NUM_13: return 13;
+        case GPIO_NUM_14: return 14;
+        case GPIO_NUM_15: return 15;
+        case GPIO_NUM_16: return 16;
+        case GPIO_NUM_17: return 17;
+        case GPIO_NUM_18: return 18;
+        case GPIO_NUM_19: return 19;
         // case 20:
-        case 21: return 21;
-        case 22: return 22;
-        case 23: return 23;
+        case GPIO_NUM_21: return 21;
+        case GPIO_NUM_22: return 22;
+        case GPIO_NUM_23: return 23;
         // case 24:
-        case 25: return 25;
-        case 26: return 26;
-        case 27: return 27;
+        case GPIO_NUM_25: return 25;
+        case GPIO_NUM_26: return 26;
+        case GPIO_NUM_27: return 27;
         // case 28:
         // case 29:
         // case 30:

@@ -1,11 +1,28 @@
 #include "wifi.h"
 
 // Initialize wifi based on default configuration
-void wifi_config_default()
+void wifi_config_default(wifi_mode_t mode)
 {   
     // Initialize first with default configuration
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&config));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+
+    switch (mode)
+    {
+        case WIFI_MODE_AP:
+            ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+            break;
+        case WIFI_MODE_STA:
+            ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+            break;
+        case WIFI_MODE_APSTA:
+            ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+            break;
+        default:
+            ESP_LOGE("wifi_config_default", "Unhandled wifi mode.");
+            break;
+    }
 }
 
 // Callback function that handles when wifi events happen
@@ -222,4 +239,15 @@ char* wifi_second_to_string(wifi_second_chan_t second)
     }
 
     return NULL;
+}
+
+void wifi_set_ip_info(const char *ip, const char *gw, const char *nm)
+{
+    tcpip_adapter_ip_info_t ip_info;
+
+    inet_pton(AF_INET, ip,  &ip_info.ip);
+    inet_pton(AF_INET, gw,  &ip_info.gw);
+    inet_pton(AF_INET, nm,  &ip_info.netmask);
+    
+    tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info);
 }
