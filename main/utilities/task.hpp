@@ -1,41 +1,32 @@
+#pragma once
 #include "utilities.h"
-#include "string.h"
+#include <string>
 
-// class TaskBase
-// {
-// public:
+// Base class, C++ wrapper for creating tasks
+// Should not be used by itself, should be inherited
+class Task
+{
+public:
 
-//     xTaskHandle Handle;
+    Task(std::string task_name, uint16_t stack_size=2048, uint8_t priority=5);
 
-//     ~TaskBase() { vTaskDelete(Handle); }
-// };
+    virtual ~Task();
 
-// // To create a free-function task
-// class Task : public TaskBase
-// {
-// public:
+    void Start(void *p);
 
-//     Task(char const *name, void (*task_ptr)(void *), uint priority,
-//                             u16 stack_depth=configMINIMAL_STACK_SIZE)
-//     {
-//         xTaskCreate(task_ptr, (const char*)name, stack_depth, this, priority, &Handle);
-//     }
-// };
+    void Stop();
 
-// // 
-// class TaskClass : public TaskBase
-// {
-// public:
+    virtual void Run(void *p) = 0;
 
-//     TaskClass(char const *name, uint priority, u16 stack_depth=configMINIMAL_STACK_SIZE)
-//     {
-//         xTaskCreate(&Task_ptr, (const char*)name, stack_depth, this, priority, &Handle);
-//     }
+    void Delay(int ms);
 
-//     virtual void Task() = 0;
+private:
 
-//     static void Task_ptr(void *p)
-//     {
-//         static_cast(p)->Task();
-//     }
-// };
+    static void RunTask(void *task_instance);
+
+    xTaskHandle     Handle;
+    std::string     TaskName;
+    uint16_t        StackSize;
+    uint8_t         Priority;
+    void            *Data;
+};

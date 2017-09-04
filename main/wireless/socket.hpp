@@ -33,20 +33,11 @@ public:
     void CreateSocket(bool udp);
 
     // Binds socket to port
+    // Set client to true to bind as a client, must also set ip address
+    // Otherwise default to server, no ip address needed
     void Bind(bool client=false, const char *ip="0.0.0.0");
 
-    // Creates a receive task to receive packet
-    void Receive(bool block=true);
-    
-    // // Not implemented yet
-    // void Send(string s);
-
-    // // Not implemented yet
-    // void Listen();
-
-private:
-
-    void SocketReceiveFunction();
+protected:
 
     port_t          Port;
     int             Sock;

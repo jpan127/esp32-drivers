@@ -1,19 +1,27 @@
-#include "blink.hpp"
+#include "BlinkTask.hpp"
 #include "MotorDriverTask.cpp"
-#include "TempRxTask.cpp"
-#include "wifi_task.cpp"
+#include "UdpServerTask.hpp"
+#include "WifiScanTask.hpp"
+
+static void *EMPTY;
 
 // Link app_main
 extern "C" { void app_main(); }
 
 void app_main()
 {
-    // Blink *blink = new Blink;
-    // xTaskCreate(Blink::Run, "blink_task", 2048, (void*)blink, 5, NULL);
+    // Initialize flash
+    ESP_ERROR_CHECK(nvs_flash_init());
+        
+    // BlinkTask blink_task;
+    // blink_task.Run(EMPTY);
+
+
+    UdpServerTask udp_server_task("UdpServerTask", 8196);
+    udp_server_task.Run(EMPTY);
+
+
 
     // xTaskCreate(&MotorDriverTask, "MotorDriverTask", 8196, NULL, 10, NULL);
-
-    xTaskCreate(&TempRxTask, "TempRxTask", 8196, NULL, 10, NULL);
-
-    // xTaskCreate(&wifi_scan_task, "wifi_scan_task", 8196, NULL, 10, NULL);    
+    // xTaskCreate(&WifiScanTask, "WifiScanTask", 8196, NULL, 10, NULL);    
 }

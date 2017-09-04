@@ -13,6 +13,7 @@
         "type_traits": "cpp",
         "cerrno": "cpp",
         "string_view": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "initializer_list": "cpp"
     }
 }
