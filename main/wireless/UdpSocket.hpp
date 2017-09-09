@@ -1,3 +1,4 @@
+#pragma once
 #include "socket.hpp"
 
 // Inherits Bind(), Close()

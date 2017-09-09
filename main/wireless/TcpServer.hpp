@@ -1,6 +1,6 @@
 #pragma once
-#include "UdpSocket.hpp"
 #include "WifiStation.hpp"
+#include "TcpSocket.hpp"
 #include "utilities.h"
 #include "credentials.hpp"          // Saved ssid and password
 #include <freertos/event_groups.h>
@@ -16,25 +16,19 @@
 #define BIT_DISCONNECTED    (1 << 3)
 #define FIVE_MIN            (5*60*1000)
 
-class UdpServer : public WifiStation
+class TcpServer : public TcpSocket, public WifiStation
 {
 public:
 
     // Constructor
-    UdpServer();
+    TcpServer(port_t Port);
 
-    // Initialize wifi
-    void Initialize();
-        
-    // Initializes socket
-    void InitializeSocket();
+    // Start wifi
+    void StartWifi();
 
-    // Wait for packet
-    void WaitForPacket(bool block=true);
+    // Start TCP server, start listening
+    void StartTcpServer();
 
-private:
-
-    // Socket set up as a server, that listens for requests
-    // Named with 'm' for member because ServerSocket looks too much like a class :(
-    UdpSocket mServerSocket;
+    // Accept connections, parse packets
+    void HandleConnections();
 };

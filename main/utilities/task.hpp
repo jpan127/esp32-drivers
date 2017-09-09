@@ -8,18 +8,26 @@ class Task
 {
 public:
 
-    Task(std::string task_name, uint16_t stack_size=2048, uint8_t priority=5);
-
+    // Virtual destructor
     virtual ~Task();
 
+    // Create task
     void Start(void *p);
 
+    // Delete task
     void Stop();
 
+    // Pure virtual, loop that task will run
     virtual void Run(void *p) = 0;
 
+    // Shortcut for vTaskDelay
     void Delay(int ms);
 
+protected:
+
+    // Constructor
+    Task(std::string task_name, uint16_t stack_size=2048, uint8_t priority=5);
+    
 private:
 
     static void RunTask(void *task_instance);

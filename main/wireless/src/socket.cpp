@@ -40,7 +40,7 @@ void Socket::CreateSocket(bool udp)
     }
     else {
         ESP_LOGI("Socket::CreateSocket", "Socket successfully created.");
-        State = CONNECTED;
+        State = CREATED;
     }
 }
 
@@ -52,7 +52,7 @@ void Socket::Bind(bool client, const char *ip)
     else if (State == UNCONNECTED) {
         ESP_LOGE("Socket::Bind", "Cannot bind when socket not connected.");
     }
-    else if (State == CONNECTED) {
+    else if (State == CREATED) {
         struct sockaddr_in server_address;
         server_address.sin_family       = AF_INET;
         server_address.sin_addr.s_addr  = (client) ? inet_addr(ip) : htonl(INADDR_ANY);

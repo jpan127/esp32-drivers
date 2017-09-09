@@ -1,60 +1,60 @@
+#pragma once
 #include "socket.hpp"
+#include <string>
+
+//////////////////////////////////////////////////
+//  How to use TcpSocket                        //
+//                                              //
+//      Server:                                 //
+//          1. Create socket                    //
+//          2. Listen for connections           //
+//          3. Accept a connection request      //
+//          4. Receive the data, close socket   //
+//      Client:                                 //
+//                                              //
+//          1. Create socket                    //
+//          2. Connect to server                //
+//          3. Send packet                      //
+//                                              //
+//////////////////////////////////////////////////
 
 class TcpSocket : public Socket
 {
 public:
 
-    TcpSocket();
+    // Constructor
+    TcpSocket(port_t Port);
 
+    // Destructor
     ~TcpSocket();
 
-    void Send();
+    // Create TCP socket
+    void CreateTcpSocket();
 
-    void Listen();
+    // [BLOCKING] Connect to server
+    void ConnectToServer(char *server_ip, int server_port);
+
+    // [BLOCKING] Send packet
+    void Send(char *packet);
+    void Send(std::string packet);
+
+    // Listening for connections
+    void Listen(uint8_t queue_size);
+
+    // [BLOCKING] Accept a connection on a socket
+    void Accept();
+
+    // Returns socket handle
+    int GetSock();
+
+    // So this function can access Receive()
+    friend void AcceptConnection(TcpSocket tcp_socket, const char* TAG);
+
+private:
+
+    // [BLOCKING] Parse data packet of accepted connection
+    void Receive(int client_sock);
 };
-
-
-
-// void Socket::Listen()
-// {
-//     // TCP only
-//     // Size of socket connections queue
-//     int listen_queue = 5;
-
-//     int rc = listen(Sock, listen_queue);
-//     if (rc < 0) {
-//         ESP_LOGE("Socket::Listen", "Error listening. rc: %i error: %s", rc, strerror(errno));
-//     }
-//     else {
-//         State = LISTENING;
-//     }
-// }
-
-// void Socket::Accept()
-// {
-//     // TCP only
-// }
-
-// #include <lwip/sockets.h>
-
-// void tcp_server()
-// {
-//     // Create a socket: socket(domain, type, protocol)
-//     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-// }
-
-// void tcp_client()
-// {
-//     // Create a socket: socket(domain, type, protocol)
-//     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-// }
-
-// void tcp_server_accept_client(int sock)
-// {
-//     struct sockaddr_in client_addr;
-//     socklen_t client_addr_length = sizeof(client_addr);
-//     int client_sock = accept(sock, (struct sockaddr *)&client_addr, client_addr_length);
-// }
 
 // void tcp_client_connect_server(int sock, char *ip="192.168.1.200")
 // {
@@ -64,15 +64,4 @@ public:
 //     server_addr.sin_port = htons(9999);
     
 //     int rc = connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
-// }
-
-// int tcp_last_socket_errno(int socket)
-// {
-//     int errno = 0;
-//     uint32_t optlen = sizeof(errno);
-
-//     getsockopt(socket, SOL_SOCKET, SO_ERROR, &errno, &optlen);
-
-//     // Log socket error?
-//     return errno;
 // }

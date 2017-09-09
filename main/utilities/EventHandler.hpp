@@ -1,5 +1,6 @@
 
-
+// [TODO] Make a generic event handler that can be inherited
+// by any task class
 class EventHandler
 {
 public:

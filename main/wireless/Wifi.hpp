@@ -15,9 +15,6 @@ class Wifi
 {
 public:
 
-    // Constructor
-    Wifi(wifi_mode_t mode);
-
     // Destructor
     ~Wifi();
 
@@ -30,6 +27,11 @@ public:
     // Set TCPIP adapter info: ip, gateway, subnet
     void    SetIpInfo(wifi_mode_t mode, const char *ip, const char *gw, const char *nm);
 
+protected:
+
+    // Constructor
+    Wifi(wifi_mode_t mode);
+        
 private:
 
     // Constructor calls this automatically

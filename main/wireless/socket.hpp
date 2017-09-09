@@ -1,24 +1,37 @@
+#pragma once
 #include <esp_log.h>                    // Logging
 #include <freertos/FreeRTOS.h>          // FreeRTOS
 #include <freertos/task.h>              // Create tasks
-#include <lwip/inet.h>
-#include <lwip/sockets.h>
-#include <string.h>
-#include <errno.h>
-#include <cstring>                      // memset()
+#include <lwip/inet.h>                  // inet functions, socket structs
+#include <lwip/sockets.h>               // Sockets
+#include <string.h>                     // String
+#include <errno.h>                      // Determining errors
+#include <cstring>                      // memset() memcpy()
 
 #define MAX_BUF (1024)
 
 typedef uint16_t port_t;
-typedef enum {UNCONNECTED, CONNECTED, BINDED, LISTENING} socket_state_t;
+typedef enum {UNCONNECTED, CREATED, BINDED, CONNECTED, LISTENING} socket_state_t;
 
-// Create a socket, bind to port, then listen or receive
+//////////////////////////////////////////////////////
+//  How to use Socket:                              //
+//                                                  //
+//      Server:                                     //
+//          1. Create socket                        //
+//          2. Bind socket to port                  //
+//          3. TCP = listen, UDP = recvfrom         //
+//          4. TCP = accept                         //
+//                                                  //
+//      Client:                                     //
+//          1. Create socket                        //
+//          2. TCP = connect to server              //
+//          3. TCP = send data                      //
+//                                                  //
+//////////////////////////////////////////////////////
+
 class Socket
 {
 public:
-
-    // Constructor
-    Socket(port_t port);
 
     // Deletes socket
     ~Socket();
@@ -39,6 +52,9 @@ public:
 
 protected:
 
+    // Constructor
+    Socket(port_t port);
+        
     port_t          Port;
     int             Sock;
     socket_state_t  State;
