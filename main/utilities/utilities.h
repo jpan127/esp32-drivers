@@ -45,12 +45,12 @@ inline int gpio_enum_to_int(gpio_num_t gpio)
         case GPIO_NUM_3:  return 3;
         case GPIO_NUM_4:  return 4;
         case GPIO_NUM_5:  return 5;
-        case GPIO_NUM_6:  return 6;
-        case GPIO_NUM_7:  return 7;
-        case GPIO_NUM_8:  return 8;
-        case GPIO_NUM_9:  return 9;
-        case GPIO_NUM_10: return 10;
-        case GPIO_NUM_11: return 11;
+        case GPIO_NUM_6:  return 6;     // FLASH DO NOT USE
+        case GPIO_NUM_7:  return 7;     // FLASH DO NOT USE
+        case GPIO_NUM_8:  return 8;     // FLASH DO NOT USE
+        case GPIO_NUM_9:  return 9;     // FLASH DO NOT USE
+        case GPIO_NUM_10: return 10;    // FLASH DO NOT USE
+        case GPIO_NUM_11: return 11;    // FLASH DO NOT USE
         case GPIO_NUM_12: return 12;
         case GPIO_NUM_13: return 13;
         case GPIO_NUM_14: return 14;
@@ -70,6 +70,16 @@ inline int gpio_enum_to_int(gpio_num_t gpio)
         // case 28:
         // case 29:
         // case 30:
+        // case 31:
+        case GPIO_NUM_32: return 32;
+        case GPIO_NUM_33: return 33;
+        case GPIO_NUM_34: return 34;
+        case GPIO_NUM_35: return 35;
+        case GPIO_NUM_36: return 36;
+        case GPIO_NUM_37: return 37;
+        case GPIO_NUM_38: return 38;
+        case GPIO_NUM_39: return 39;
+        // case 40:
 
         default:
             ESP_LOGE("Gpio::Gpio", "Nonexistent GPIO pin, GPIO uninitialized.");
@@ -112,6 +122,16 @@ inline gpio_num_t gpio_int_to_enum(int gpio)
         // case 28:
         // case 29:
         // case 30:
+        // case 31:
+        case 32: return GPIO_NUM_32;
+        case 33: return GPIO_NUM_33;
+        case 34: return GPIO_NUM_34;
+        case 35: return GPIO_NUM_35;
+        case 36: return GPIO_NUM_36;
+        case 37: return GPIO_NUM_37;
+        case 38: return GPIO_NUM_38;
+        case 39: return GPIO_NUM_39;
+        // case 40:
 
         default:
             ESP_LOGE("Gpio::Gpio", "Nonexistent GPIO pin, GPIO uninitialized.");

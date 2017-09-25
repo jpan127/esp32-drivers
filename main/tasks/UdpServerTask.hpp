@@ -29,7 +29,7 @@ public:
             udp_server.WaitForPacket(false);
             
             // When unblocked
-            TASK_DELAY(1000);
+            TASK_DELAY(100);
         }
     }
 

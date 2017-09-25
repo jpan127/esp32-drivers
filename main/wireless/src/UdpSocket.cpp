@@ -165,3 +165,25 @@ void UdpSocket::UdpReceiveFunction()
         ESP_LOGE(TAG, "Error receiving. length: %i, error: %s", length, strerror(errno));
     }
 }
+
+void UdpSocket::UdpSend(char *packet, int packet_length, port_t port, char *server_ip)
+{
+    struct sockaddr_in server_address;
+    memset((char *)&server_address, 0, sizeof(server_address));
+    server_address.sin_family = AF_INET;
+    server_address.sin_port   = htons(port);
+    inet_pton(AF_INET, server_ip, &server_address.sin_addr.s_addr);
+
+    int rc = sendto(Sock, 
+                    packet, 
+                    packet_length, 
+                    0, 
+                    (struct sockaddr *)&server_address, 
+                    sizeof(server_address));
+    if (rc < 0) {
+        ESP_LOGE("UdpSocket::UdpSend", "Trouble sending packet to server at port %i", port);
+    }
+    else {
+        ESP_LOGI("UdpSocket::UdpSend", "Sent: %s", packet);            
+    }
+}

@@ -4,6 +4,8 @@
 #include <esp_log.h>            // Logging
 #include <driver/mcpwm.h>       // Pwm
 
+#define DISABLED_PWM (255)
+
 // Select operator A, B, or both
 typedef enum {PWM_A, PWM_B, PWM_AB } pwm_output_t;
 
@@ -13,19 +15,23 @@ class Pwm
 {
 public:
 
-    // Constructor
-    Pwm(mcpwm_unit_t pwm_unit, int gpio_a, int gpio_b, mcpwm_timer_t timer);
+    // Constructor for 2 PWMs
+    Pwm(mcpwm_unit_t pwm_unit, int gpio_a, int gpio_b, mcpwm_timer_t timer=MCPWM_TIMER_0);
+    // Constructor for only 1 PWM
+    Pwm(mcpwm_unit_t pwm_unit, int gpio, mcpwm_timer_t timer=MCPWM_TIMER_0);
     
     // Initializes pwm, the gpio pins, etc with DEFAULT configurations
+    // Use other set functions to change the configurations before initialization
     void Initialize();
 
     // Set PWM Timer, best to call before Initialize()
     void SetTimer(mcpwm_timer_t timer);
 
-    // Set PWM Timer, best to call before Initialize()
+    // Set timer frequency, best to call before Initialize()
     void SetFrequency(uint32_t frequency);
 
-    // Sets duty cycle of Timer for both A and B in percentage
+    // Sets duty cycle of Timer in percentage
+    void SetDuty(float duty_a);
     void SetDuty(float duty_a, float duty_b);
 
     // Start PWM
@@ -38,6 +44,9 @@ public:
     void GeneratePwm(pwm_output_t pwm_output, float duty);
 
 private:
+
+    // Calculates duty cycle from position
+    float PositionToDutyCycle(int8_t position);
 
     mcpwm_unit_t        PwmUnit;    // PWM Unit, 0 or 1
     int                 GpioA;      // Gpio Pin A

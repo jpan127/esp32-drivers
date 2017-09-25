@@ -1,10 +1,10 @@
-#include "UdpServer.hpp"
+#include "UdpClient.hpp"
 
 static EventGroupHandle_t EventGroup;
 
 static void EventHandler(void *ctx, system_event_t *event)
 {
-    static const char *TAG = "UdpServer::EventHandler";
+    static const char *TAG = "UdpClient::EventHandler";
 
     switch (event->event_id)
     {
@@ -39,13 +39,12 @@ static void EventHandler(void *ctx, system_event_t *event)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-UdpServer::UdpServer(port_t Port) : WifiStation(), mServerSocket(Port)
+UdpClient::UdpClient(port_t Port) : WifiStation(), mClientSocket(Port)
 {
-    // Create an event group
     EventGroup = xEventGroupCreate();
 }
 
-void UdpServer::Initialize()
+void UdpClient::Initialize()
 {
     // Initialize TCPIP
     tcpip_adapter_init();
@@ -56,33 +55,30 @@ void UdpServer::Initialize()
 
     // Set up station configuration
     SetConfig(NETWORK_SSID, NETWORK_PASS);
-    ESP_LOGI("UdpServer::Initialize", "Station configuration initialized SSID: %s", NETWORK_SSID);
+    ESP_LOGI("UdpClient::Initialize", "Station configuration initialized SSID: %s", NETWORK_SSID);
 
     // Set event callback
     ESP_ERROR_CHECK(esp_event_loop_init((system_event_cb_t)EventHandler, NULL));
 
     // Start
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI("UdpServer::Initialize", "Starting wifi...");
+    ESP_LOGI("UdpClient::Initialize", "Starting wifi...");
 
     // Connect
     ESP_ERROR_CHECK(esp_wifi_connect());
-    ESP_LOGI("UdpServer::Initialize", "Connecting wifi...");
+    ESP_LOGI("UdpClient::Initialize", "Connecting wifi...");
 }
 
-void UdpServer::InitializeSocket()
+void UdpClient::InitializeSocket()
 {
     // Wait for wifi connection before creating sockets
     xEventGroupWaitBits(EventGroup, BIT_CONNECTED, pdTRUE, pdTRUE, FIVE_MIN / portTICK_PERIOD_MS);
     // Initialize socket
-    mServerSocket.UdpCreateSocket();
-    ESP_LOGI("UdpServer::InitializeSocket", "UDP Socket created.");
-    mServerSocket.Bind();
-    ESP_LOGI("UdpServer::InitializeSocket", "UDP Socket binded.");
+    mClientSocket.UdpCreateSocket();
+    ESP_LOGI("UdpClient::InitializeSocket", "UDP Socket created.");
 }
 
-void UdpServer::WaitForPacket(bool block)
+void UdpClient::SendPacket(char *packet, int packet_length, port_t port, char *server_ip)
 {
-    ESP_LOGI("UdpServer::WaitForPacket", "Waiting for packet...");
-    mServerSocket.UdpReceive(block);
+    mClientSocket.UdpSend(packet, packet_length, port, server_ip);
 }

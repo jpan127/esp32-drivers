@@ -1,6 +1,5 @@
 #include "gpio.hpp"
 
-
 Gpio::Gpio(gpio_num_t pin, gpio_mode_t mode)
 {
     Pin = pin;
@@ -14,11 +13,6 @@ Gpio::Gpio(gpio_num_t pin, gpio_mode_t mode)
     config.pull_up_en   = GPIO_PULLUP_DISABLE;
 
     ESP_ERROR_CHECK(gpio_config(&config));
-
-    // If output, clear to known state
-    if (mode == GPIO_MODE_OUTPUT) {
-        Clear();
-    }
 }
 
 Gpio::Gpio(int pin, gpio_mode_t mode)
@@ -35,11 +29,6 @@ Gpio::Gpio(int pin, gpio_mode_t mode)
     config.pull_up_en   = GPIO_PULLUP_DISABLE;
 
     ESP_ERROR_CHECK(gpio_config(&config));
-
-    // If output, clear to known state
-    if (mode == GPIO_MODE_OUTPUT) {
-        Clear();
-    }
 }
 
 void Gpio::SetInterrupt(gpio_int_type_t intr_type)
@@ -57,17 +46,19 @@ void Gpio::DisableInterrupt()
     ESP_ERROR_CHECK(gpio_intr_disable(Pin));    
 }
 
-void Gpio::Set()
+void Gpio::SetResistorMode(gpio_pull_mode_t pull)
+{
+    ESP_ERROR_CHECK(gpio_set_pull_mode(Pin, pull));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void GpioOutput::Set()
 {
     ESP_ERROR_CHECK(gpio_set_level(Pin, 1));
 }
 
-void Gpio::Clear()
+void GpioOutput::Clear()
 {
     ESP_ERROR_CHECK(gpio_set_level(Pin, 0));
-}
-
-void Gpio::SetResistorMode(gpio_pull_mode_t pull)
-{
-    ESP_ERROR_CHECK(gpio_set_pull_mode(Pin, pull));
 }

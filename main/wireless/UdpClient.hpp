@@ -5,12 +5,11 @@
 #include "credentials.hpp"          // Saved ssid and password
 #include <freertos/event_groups.h>
 
-class UdpServer : public WifiStation
+class UdpClient : public WifiStation
 {
 public:
 
-    // Constructor
-    UdpServer(port_t Port=UDP_DEFAULT_PORT);
+    UdpClient(port_t Port);
 
     // Initialize wifi
     void Initialize();
@@ -18,11 +17,10 @@ public:
     // Initializes socket
     void InitializeSocket();
 
-    // Wait for packet
-    void WaitForPacket(bool block=true);
+    // Send packet
+    void SendPacket(char *packet, int packet_length, port_t port, char *server_ip);
 
 private:
 
-    // Socket set up as a server, that listens for requests
-    UdpSocket mServerSocket;
+    UdpSocket mClientSocket;
 };

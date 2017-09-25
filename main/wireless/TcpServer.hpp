@@ -6,7 +6,7 @@
 #include <freertos/event_groups.h>
 
 #define CLIENT_IP           ("192.168.1.229")
-#define PORT                (4222)
+#define TCP_DEFAULT_PORT    (4111)
 #define DEVICE_IP           ("192.168.1.250")
 #define DEVICE_GW           ("192.168.1.1")
 #define DEVICE_SN           ("255.255.255.0")
@@ -21,7 +21,7 @@ class TcpServer : public TcpSocket, public WifiStation
 public:
 
     // Constructor
-    TcpServer(port_t Port);
+    TcpServer(port_t Port=TCP_DEFAULT_PORT);
 
     // Start wifi
     void StartWifi();

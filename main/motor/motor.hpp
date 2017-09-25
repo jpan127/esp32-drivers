@@ -2,7 +2,7 @@
 #include "pwm.hpp"
 #include "gpio.hpp"
 
-// Controls a single L298N, 2 enables, and 2 PWM pins
+// Controls a single L298N, 2 enables, and 4 PWM pins
 class MotorDriver
 {
 public:
