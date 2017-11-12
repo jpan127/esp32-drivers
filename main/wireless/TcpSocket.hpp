@@ -28,6 +28,12 @@ public:
     // Destructor
     ~TcpSocket();
 
+    // Copy Constructor
+    TcpSocket(const TcpSocket &copy);    
+
+    // Assignment Constructor
+    TcpSocket& operator=(TcpSocket copy);
+
     // Create TCP socket
     void CreateTcpSocket();
 

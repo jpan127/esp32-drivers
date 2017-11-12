@@ -14,6 +14,26 @@ TcpSocket::~TcpSocket()
     Close();
 }
 
+TcpSocket::TcpSocket(const TcpSocket &copy) : Socket(copy.Port)
+{
+    if (this == &copy) return;
+
+    else
+    {
+        Sock  = copy.Sock;
+        Port  = copy.Port;
+        State = copy.State;
+    }
+}
+
+TcpSocket& TcpSocket::operator=(TcpSocket copy)
+{
+    using std::swap;
+    swap(*this, copy);
+
+    return *this;
+}
+
 void TcpSocket::CreateTcpSocket()
 {
     if (Sock < 0)
