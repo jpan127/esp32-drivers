@@ -50,6 +50,8 @@ public:
     // Otherwise default to server, no ip address needed
     void Bind(bool client=false, const char *ip="0.0.0.0");
 
+    port_t GetPort();
+
 protected:
 
     // Constructor

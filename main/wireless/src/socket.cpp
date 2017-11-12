@@ -20,7 +20,9 @@ Socket::~Socket()
 
 void Socket::Close()
 {
+    shutdown(Sock, SHUT_RDWR);
     close(Sock);
+    Sock  = -1;
     State = UNCONNECTED;    
 }
 
@@ -31,10 +33,13 @@ void Socket::SetPort(port_t port)
 
 void Socket::CreateSocket(bool udp)
 {
-    //                    domain,   type,       protocol
+    //                    domain,   type,        protocol
     Sock = (udp) ? (socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP)) :
                    (socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
-    
+ 
+    int option = 1;
+    setsockopt(Sock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+   
     if (Sock == -1) {
         ESP_LOGE("Socket::CreateSocket", "Error creating socket: %s", strerror(errno));
     }
@@ -69,4 +74,9 @@ void Socket::Bind(bool client, const char *ip)
             State = BINDED;            
         }
     }
+}
+
+port_t Socket::GetPort()
+{
+    return Port;
 }

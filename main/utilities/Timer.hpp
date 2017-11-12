@@ -1,10 +1,11 @@
 #pragma once
+#include <freertos/FreeRTOS.h>          // FreeRTOS
 #include <soc/timer_group_struct.h>
 #include <driver/timer.h>
 #include <driver/periph_ctrl.h>
 
 // Function pointer
-typedef (void)(*f_ptr)(void *);
+typedef void(*f_ptr)(void *);
 
 //////////////////////////////////////////////////////////
 //  Instructions:                                       //

@@ -5,3 +5,6 @@ build/*
 *.json
 
 credentials.hpp
+
+.vscode/*
+

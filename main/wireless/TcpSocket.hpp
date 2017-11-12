@@ -48,20 +48,8 @@ public:
     int GetSock();
 
     // So this function can access Receive()
-    friend void AcceptConnection(TcpSocket tcp_socket, const char* TAG);
-
-private:
+    friend void AcceptConnection(TcpSocket tcp_socket, const char* TAG, int num_tasks);
 
     // [BLOCKING] Parse data packet of accepted connection
     void Receive(int client_sock);
 };
-
-// void tcp_client_connect_server(int sock, char *ip="192.168.1.200")
-// {
-//     struct sockaddr_in server_addr;
-//     server_addr.sin_family = AF_INET;
-//     inet_pton(AF_INET, ip, &server_addr.sin_addr.s_addr);
-//     server_addr.sin_port = htons(9999);
-    
-//     int rc = connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
-// }

@@ -16,7 +16,15 @@ TcpSocket::~TcpSocket()
 
 void TcpSocket::CreateTcpSocket()
 {
-    CreateSocket(false);
+    if (Sock < 0)
+    {
+        CreateSocket(false);
+        Bind(false);
+    }
+    else
+    {
+        ESP_LOGE("TcpSocket::CreateTcpSocket", "Cannot create + bind socket that is already in use!");
+    }
 }
 
 void TcpSocket::ConnectToServer(char *server_ip, int server_port)
@@ -84,22 +92,26 @@ int TcpSocket::GetSock()
 // [TODO] Encapsulate AcceptConnection + TcpSocketAcceptTask inside TcpSocket
 
 // Helper function that accepts a connection, used by task + member function
-void AcceptConnection(TcpSocket tcp_socket, const char* TAG)
+void AcceptConnection(TcpSocket *tcp_socket, const char* TAG, int task_id)
 {
     struct sockaddr_in client_address;
     socklen_t client_address_size = sizeof(client_address);
 
     // Receive socket handle of accepted connection
-    int client_sock = accept(tcp_socket.GetSock(), 
+    int client_sock = accept(tcp_socket->GetSock(), 
                             (struct sockaddr *)&client_address, 
                             &client_address_size);
     if (client_sock < 0) {
-        ESP_LOGE(TAG, "Error accepting from client. Error: %s", strerror(errno));
+        ESP_LOGE(TAG, "[%i] Error accepting from client | Server Socket: %i | Error: %s", task_id, tcp_socket->GetSock(), strerror(errno));
     }
     else {
-        ESP_LOGI(TAG, "Accepted client connection. Socket: %i", client_sock);
-        tcp_socket.Receive(client_sock);
+        ESP_LOGI(TAG, "[%i] Accepted client connection | Server Socket: %i | Client Socket: %i", tcp_socket->GetSock(),task_id, client_sock);
+        tcp_socket->Receive(client_sock);
     }
+
+    // Close client socket
+    shutdown(client_sock, SHUT_RDWR);
+    close(client_sock);
 }
 
 // [TASK] Task that accepts a connection and blocks
@@ -107,7 +119,7 @@ static void TcpSocketAcceptTask(void *TcpSocketInstance)
 {
     num_tasks++;
     
-    AcceptConnection(*(TcpSocket *)TcpSocketInstance, "TcpSocketAcceptTask");
+    AcceptConnection((TcpSocket *)TcpSocketInstance, "TcpSocketAcceptTask", num_tasks);
 
     num_tasks--;
     vTaskDelete(NULL);
@@ -117,13 +129,13 @@ void TcpSocket::Accept()
 {
     if (num_tasks < MAX_TASKS) {
         ESP_LOGI("TcpSocket::Accept", "Creating TcpSocketAcceptTask %i", num_tasks);
-        xTaskCreate(&TcpSocketAcceptTask, "TcpSocketAcceptTask", 2048, (void *)&Sock, 5, NULL);
+        xTaskCreate(&TcpSocketAcceptTask, "TcpSocketAcceptTask", 2048, (void *)this, 5, NULL);
     }
     // This is so the main task also blocks, remove this section if main task needs to do other things
     else {
         ESP_LOGI("TcpSocket::Accept", "Already running max TcpSocketAcceptTasks!");
         ESP_LOGI("TcpSocket::Accept", "Main task blocking...");
-        AcceptConnection(*this, "TcpSocket::Accept");
+        AcceptConnection(this, "TcpSocket::Accept", num_tasks);
     }
 }
 
@@ -173,7 +185,7 @@ void TcpSocket::Receive(int client_sock)
                                 0);
         if (size_read < 0) {
             ESP_LOGE(TAG, "Error receiving on socket %i. Error: %s", client_sock, strerror(errno));
-            return;
+            break;
         }
         // Nothing more to read
         else if (size_read == 0) {
@@ -193,6 +205,4 @@ void TcpSocket::Receive(int client_sock)
     ESP_LOGI(TAG, "Received %i bytes : %.*s", buffer_index, buffer_index, data);
     // Free buffer
     delete [] data;
-    // Close client socket since we are done with it
-    close(client_sock);
 }
