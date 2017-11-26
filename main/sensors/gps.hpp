@@ -50,13 +50,16 @@ typedef enum
     CHECKSUMB
 } ublox_parser_state_E;
 
+// Semaphore for uart receive signal
 SemaphoreHandle_t GPSsem = xSemaphoreCreateBinary();
+
+// ISR handler for uart solely for GPS
 extern "C"
 {
     void ISR_GPS()
     {
         int HigherPriorityTaskWoken;
-        xSemaphoreGiveFromISR(GPSsem, HigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(GPSsem, &HigherPriorityTaskWoken);
         if (HigherPriorityTaskWoken)
         {
             portYIELD_FROM_ISR();
@@ -64,20 +67,35 @@ extern "C"
     }
 }
 
+//////////////////////////////////////////
+// Flow:                                //
+//  1. UART interrupts                  //
+//      xSemaphoreGiveFromISR           //
+//  2. HandleRxBuffer()                 //
+//  3. ParseMessages()                  //
+//                                      //
+//////////////////////////////////////////
+
 class GPS
 {
 public:
 
-    // @description : Constructor
+    // @description     : Constructor
+    // @param init_info : Struct containing configuration for uart setup
     GPS(uart_init_S init_info);
-
 
 private:
 
+    // Buffer for receiving bytes
     uint8_t RxBuffer[1024];
 
+    // Current state for the parser state machine
     ublox_parser_state_E ParserState;
+
+    // Pointer to where the buffer is currently at, or how much of the buffer has already been parsed
     uint16_t RxBufferPointer;
+
+    // Number of bytes left in the buffer that has not been parsed yet
     uint16_t BytesUnparsed;
 
     void InitializeGPSUart(uart_init_S init_info);
@@ -118,7 +136,7 @@ void GPS::InitializeGPSUart(uart_init_S init_info)
     uart_isr_register(UART_NUM_1, ISR_GPS, NULL, ESP_INTR_FLAG_LOWMED, NULL);
 }
 
-uint32_t GPS::HandleRxBuffer()
+void GPS::HandleRxBuffer()
 {
     // Reset buffer if brand new packet
     if (IDLE == ParserState)
@@ -127,7 +145,10 @@ uint32_t GPS::HandleRxBuffer()
         ParserState = HEADER;
     }
     
-    return uart_read_bytes(UART_NUM_1, RxBuffer, 1024, 20 / portTICK_PERIOD_MS);
+    BytesUnparsed += uart_read_bytes(UART_NUM_1, 
+                                    RxBuffer + RxBufferPointer, 
+                                    1024 - RxBufferPointer, 
+                                    20 / portTICK_PERIOD_MS);
 }
 
 void GPS::ReadRegister()
@@ -170,7 +191,7 @@ void GPS::ParseMessages()
                     packet.sync1 = RxBuffer[i];
                     if (packet.sync1 != header[0])
                     {
-                        ESP_LOGE("GPS::ParseMessages", "Header0 incorrect! Expected: { 0xB5, } Actual: %0.2f\n", packet.sync1);
+                        ESP_LOGE("GPS::ParseMessages", "Header0 incorrect! Expected: { 0xB5, } Actual: %0.2f", packet.sync1);
                         // Should fail gracefully here
                     }
                     --counter;
@@ -181,7 +202,7 @@ void GPS::ParseMessages()
                     packet.sync2 = RxBuffer[i];
                     if (packet.sync2 != header[1])
                     {
-                        ESP_LOGE("GPS::ParseMessages", "Header1 incorrect! Expected: { , 0x62} Actual: %0.2f\n", packet.sync2);
+                        ESP_LOGE("GPS::ParseMessages", "Header1 incorrect! Expected: { , 0x62} Actual: %0.2f", packet.sync2);
                         // Should fail gracefully here
                     }
                     ParserState = CLASS;
@@ -254,13 +275,43 @@ void GPS::ParseMessages()
                 }
                 break;
         }
+
+        // Update buffer pointer
+        ++RxBufferPointer;
     }
 
+    // Make sure checksum matches up
     CalculateChecksum(&packet, correct_checksum[0], correct_checksum[1]);
     if (correct_checksum[0] != checksum[0] || correct_checksum[1] != checksum[1])
     {
-        printf("Checksum check failed!\n");
+        ESP_LOGE("GPS::ParseMessages", "Checksum check failed!");
+        // Should fail gracefully here
     }
+    // If it matches then OK to print the packet
+    else
+    {
+        PrintPacket(&packet);
+    }
+}
+
+void GPS::PrintPacket(ublox_packet_S *packet)
+{
+    ESP_LOGI("", "--------------------------------------------------------");
+    switch (packet->msg_class)
+    {
+        case NAV: ESP_LOGI("Packet Class", "NAV"); break;
+        case RXM: ESP_LOGI("Packet Class", "RXM"); break;
+        case INF: ESP_LOGI("Packet Class", "INF"); break;
+        case ACK: ESP_LOGI("Packet Class", "ACK"); break;
+        case CFG: ESP_LOGI("Packet Class", "CFG"); break;
+        case MON: ESP_LOGI("Packet Class", "MON"); break;
+        case AID: ESP_LOGI("Packet Class", "AID"); break;
+        case TIM: ESP_LOGI("Packet Class", "TIM"); break;
+        case ESF: ESP_LOGI("Packet Class", "ESF"); break;
+    }
+    ESP_LOGI("Packet Length", "%d", packet->length);
+    ESP_LOGI("Packet Payload", "%s", packet->payload);
+    ESP_LOGI("", "--------------------------------------------------------");
 }
 
 void GPS::CalculateChecksum(ublox_packet_S *packet, uint8_t *checksum_a, uint8_t *checksum_b)
