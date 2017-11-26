@@ -36,7 +36,7 @@ public:
 
     GpioInput(gpio_num_t pin) : Gpio(pin, GPIO_MODE_INPUT) { /* EMPTY */ }
 
-    GpioInput(int pin) : Gpio(pin, GPIO_MODE_INPUT) { /* EMPTY */ }
+    GpioInput(int pin) : Gpio(pin, GPIO_MODE_INPUT)        { /* EMPTY */ }
 };
 
 // Child class of Gpio that starts out as Output
@@ -46,7 +46,7 @@ public:
 
     GpioOutput(gpio_num_t pin) : Gpio(pin, GPIO_MODE_OUTPUT) { Clear(); }
 
-    GpioOutput(int pin) : Gpio(pin, GPIO_MODE_OUTPUT) { Clear(); }
+    GpioOutput(int pin) : Gpio(pin, GPIO_MODE_OUTPUT)        { Clear(); }
 
     // Sets HIGH
     void Set();
